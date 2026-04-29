@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Rust
+engine/target/
+
+# Claude local
+.claude/settings.local.json
+.claude/worktrees/
