@@ -142,7 +142,7 @@ No back navigation, no settings, no chrome. One thing per screen.
 | # | Phase | Description | Status | Parallel | Depends | PRP Plan |
 |---|-------|-------------|--------|----------|---------|----------|
 | 1 | WASM bridge | Wire `engine/pkg/` into the Next.js app; "type AKo → 12" smoke test renders in the browser | complete | - | - | [plan](.claude/PRPs/plans/completed/wasm-bridge.plan.md) · [report](.claude/PRPs/reports/wasm-bridge-report.md) |
-| 2 | Equity engine API | Expose `equity_vs(hand_a, hand_b)` from Rust via wasm-bindgen; property test against `pokers` | pending | with 3 | - | - |
+| 2 | Equity engine API | Expose `equity_vs(hand_a, hand_b)` from Rust via wasm-bindgen; property test against `pokers` | in-progress | with 3 | - | [plan](.claude/PRPs/plans/equity-engine-api.plan.md) |
 | 3 | Estimation slider primitive | Vertical drag-to-estimate React component with tolerance bands, Pointer Events, mobile-tested | pending | with 2 | - | - |
 | 4 | Exercise screen | Compose hand display + slider + feedback animation into one screen; URL-seeded problems | pending | - | 1, 2, 3 | - |
 | 5 | Aesthetic pass | Typography, palette, motion, spacing — Elevate-grade finish on the single exercise | pending | - | 4 | - |
