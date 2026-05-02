@@ -26,22 +26,17 @@ function isRed(suit: Suit): boolean {
 
 export function PlayingCard({ card }: PlayingCardProps) {
   const glyph = SUIT_GLYPH[card.suit];
-  const colorClass = isRed(card.suit)
-    ? "text-rose-600 dark:text-rose-400"
-    : "text-zinc-900 dark:text-zinc-100";
+  const colorClass = isRed(card.suit) ? "text-rose-600" : "text-zinc-900";
   return (
     <div
       data-testid="playing-card"
       data-rank={card.rank}
       data-suit={card.suit}
       aria-label={`${card.rank} of ${SUIT_NAME[card.suit]}`}
-      className={`flex h-20 w-14 flex-col items-start justify-between rounded-md border border-zinc-300 bg-white p-1.5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950 ${colorClass}`}
+      className={`flex h-28 w-16 flex-col items-center justify-between py-2 ${colorClass}`}
     >
-      <span className="text-lg font-semibold leading-none">{card.rank}</span>
-      <span className="self-center text-2xl leading-none">{glyph}</span>
-      <span className="self-end rotate-180 text-lg font-semibold leading-none">
-        {card.rank}
-      </span>
+      <span className="text-3xl font-bold leading-none">{card.rank}</span>
+      <span className="text-3xl leading-none">{glyph}</span>
     </div>
   );
 }

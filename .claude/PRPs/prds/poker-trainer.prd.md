@@ -98,13 +98,57 @@ This single exercise must hit:
 
 ### User Flow
 
-1. Open app on phone — instantly land in the exercise (no menus, no auth)
-2. See two hands and the prompt: "What's the equity of [Hand A]?"
-3. Drag slider up/down a vertical number line (0–100%)
-4. Release — feedback animates: tolerance band reveals, true answer highlighted, "close enough" / "not quite" verdict
-5. Tap or swipe → next problem
+1. Open app on phone — instantly land in the exercise (no menus, no auth).
+2. **Idle state.** Light theme. Two hands stacked at center stage. Dotted vertical equity axis at left edge (0/20/40/60/80/100, square tick markers + labels). Horizontal light-purple/grey control bar at bottom: "drag to estimate equity ↑".
+3. **Dragging state.** Touch+drag the bottom bar upward. White background fades to a dark-grey semi-transparent overlay (hands recede into background). The bottom bar becomes a solid cyan bar spanning the screen width. As the user drags up/down, a small cyan pointer arrow tracks the dotted axis on the left, indicating the current selected % on the scale.
+4. **Release.**
+   - **In tolerance (±10%):** screen flashes bright green; "bullseye"/"nice" copy appears just above the cyan bar; white pointed-speech-bubble tooltip drops down from the cyan bar reading **"ACTUAL EQUITY"** with the exact percentage in massive bold type; minimalist geometric "firework" bursts (small squares + triangles) radiate from center.
+   - **Out of tolerance:** screen fades to a soft grey; non-committal encouraging copy ("maybe next time", "close-ish") above the cyan bar; same speech-bubble tooltip with **"ACTUAL EQUITY"**; no fireworks.
+5. **Auto-advance.** After ~1–2 seconds the next problem fades in. No tap required.
 
 No back navigation, no settings, no chrome. One thing per screen.
+
+### UI Spec (Elevate-derived)
+
+Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
+
+**A. Layout (idle)**
+- **Left edge — Y-axis.** Vertical dotted line. Square tick markers at 0, 20, 40, 60, 80, 100. Numeric labels next to each marker. Subtle, low-contrast in idle state.
+- **Center stage.** Two hold'em hands stacked vertically. Cards rendered as simple vertical rectangles — rank character + suit symbol only. Large, dark-grey type. No card art, no gradients, no shadows beyond what the design system already defines.
+- **Bottom edge — control.** Horizontal light-purple/grey block, full width minus standard gutter. Centered prompt copy: "drag to estimate equity" with an upward arrow glyph.
+
+**B. Dragging**
+- White background instantly transitions to a dark semi-transparent overlay (~70% black). Hands fade to background-layer opacity.
+- The bottom bar transforms into a solid cyan bar spanning the full screen width, vertically tracking the user's finger.
+- Small cyan pointer arrow anchors to the dotted Y-axis at the height matching the bar — indicates the currently estimated % on the scale.
+- Y-axis tick labels increase contrast while dragging (they are the only readable text besides the cyan elements).
+
+**C. Release — success (estimate within ±10% of truth)**
+- Background flashes bright green (single-frame flash, then settles).
+- Cyan bar remains at release position.
+- Encouraging copy ("bullseye", "nice") appears just above the cyan bar.
+- White speech-bubble tooltip drops from the cyan bar: **"ACTUAL EQUITY"** label + massive bold percentage (e.g. **46.3%**).
+- Geometric firework bursts (small squares + triangles, no curves, no particle physics) radiate outward from screen center. Short — under 600ms.
+
+**D. Release — miss (estimate outside ±10%)**
+- Background settles to a soft neutral grey (no green flash, no fireworks).
+- Cyan bar remains at release position.
+- Non-committal encouraging copy ("maybe next time", "close-ish") above the cyan bar.
+- Same white **"ACTUAL EQUITY"** speech-bubble tooltip drops from the cyan bar.
+
+**E. Transition**
+- After ~1.2s on success, ~1.8s on miss (tunable), the screen cross-fades to the next problem. No tap. No "next" button.
+
+**F. Motion principles**
+- Compositor-only properties (`transform`, `opacity`, `clip-path`). No animated layout properties.
+- Reduced-motion respected: all flashes/fireworks/cross-fades degrade to instant or near-instant transitions.
+- Total release-to-next-problem cycle stays under 2 seconds so the loop feels tight.
+
+**G. Palette (Elevate-derived, to be tuned)**
+- Surface: near-white (idle), near-black ~70% alpha (dragging overlay), bright green (success flash), neutral grey (miss settle).
+- Accent: cyan for the active bar + axis pointer.
+- Text: dark grey on light, white on dark overlay.
+- Tolerance band is implicit (±10% of truth), not visualized as a band on the axis.
 
 ---
 
@@ -145,7 +189,7 @@ No back navigation, no settings, no chrome. One thing per screen.
 | 2 | Equity engine API | Expose `equity_vs(hand_a, hand_b)` from Rust via wasm-bindgen; property test against `pokers` | complete | - | - | [plan](.claude/PRPs/plans/completed/equity-engine-api.plan.md) · [report](.claude/PRPs/reports/equity-engine-api-report.md) |
 | 3 | Estimation slider primitive | Vertical drag-to-estimate React component with tolerance bands, Pointer Events, mobile-tested | complete | - | - | [plan](.claude/PRPs/plans/completed/estimation-slider-primitive.plan.md) · [report](.claude/PRPs/reports/estimation-slider-primitive-report.md) |
 | 4 | Exercise screen | Compose hand display + slider + feedback animation into one screen; URL-seeded problems | complete | - | 1, 2, 3 | [plan](.claude/PRPs/plans/completed/exercise-screen.plan.md) · [report](.claude/PRPs/reports/exercise-screen-report.md) |
-| 5 | Aesthetic pass | Typography, palette, motion, spacing — Elevate-grade finish on the single exercise | pending | - | 4 | - |
+| 5 | Elevate-style UI rebuild | Replace vertical-track slider with bottom-bar-lift interaction; rebuild screen to match Elevate gameplay layout (idle / dragging / success / miss states) | in-progress | - | 4 | [plan](.claude/PRPs/plans/elevate-style-ui-rebuild.plan.md) |
 
 ### Phase Details
 
@@ -169,10 +213,20 @@ No back navigation, no settings, no chrome. One thing per screen.
 - **Scope**: Card visualization, problem prompt, slider, feedback state machine, "next problem" gesture. Problem seed in URL so problems are reproducible and shareable.
 - **Success signal**: Owner can complete 5 problems back-to-back without thinking about the app, only the math.
 
-**Phase 5: Aesthetic pass**
-- **Goal**: The exercise looks and feels finished — not a wireframe.
-- **Scope**: Typography pairing, palette, micro-animations on slider release, card art treatment, spacing rhythm, dark/light decision. Reference: Elevate.
-- **Success signal**: Owner would show this to a friend without apologizing.
+**Phase 5: Elevate-style UI rebuild**
+- **Goal**: The exercise matches the Elevate gameplay aesthetic and interaction model end-to-end. Not a polish pass on the existing layout — a rebuild of the slider primitive and the screen composition to the spec in **UI Spec (Elevate-derived)** above.
+- **Scope**:
+  - Replace the existing vertical-track `EstimationSlider` interaction with a bottom-bar-that-lifts-into-a-cyan-bar primitive. The primitive still emits `(value, isWithinTolerance)` on release; only the surface and gesture change.
+  - Add the dotted Y-axis (0/20/40/60/80/100 with square markers + labels) on the left edge.
+  - Replace `PlayingCard` rendering with simplified vertical rank+suit rectangles per the spec.
+  - Implement the four states (idle, dragging, success, miss) with the described background, cyan bar, axis pointer, copy, and tooltip behaviors.
+  - Tolerance hard-coded to ±10% for hand-vs-hand equity (config knob, not magic number).
+  - "ACTUAL EQUITY" speech-bubble tooltip component.
+  - Geometric firework burst on success (squares + triangles, compositor-only motion, ≤ 600ms).
+  - Auto-advance to next problem after ~1.2s success / ~1.8s miss.
+  - Reduced-motion path: instant transitions, no fireworks.
+- **Success signal**: Side-by-side with the Elevate reference video, the loop reads as the same primitive applied to poker. Owner would show this to a friend without apologizing.
+- **Out of phase scope**: Multiple exercise types, additional tolerance schemes, miss-vs-bullseye gradient (binary green/grey only), settings, score persistence.
 
 ### Parallelism Notes
 
@@ -191,6 +245,10 @@ Phases 2 and 3 are independent and can run in parallel — phase 2 is engine-sid
 | Scope | Single exercise, polished | All 15 exercises, rough | MVP must prove the interaction primitive end-to-end before breadth |
 | Math location | Rust/WASM for combinatorial; TS for arithmetic | All Rust, all TS | Match each tool to its strength; minimize WASM round-trips for trivial calc |
 | State | Local + URL | Global store (Zustand etc.) | YAGNI for prototype |
+| UI direction | Elevate gameplay aesthetic, literal port | Bespoke poker-themed visual language | Elevate's drag-to-estimate is the validated primitive; differentiation is in *applying* it to poker, not in reinventing the chrome around it |
+| Slider gesture | Bottom-bar lifts into cyan bar w/ Y-axis pointer | Vertical track w/ thumb (current Phase 3 build) | Matches Elevate; one-thumb reach on phone; isolates gameplay from idle screen visually |
+| Tolerance band visualization | Implicit (binary success/miss only) | Visible band on axis (current Phase 3 build) | Elevate doesn't reveal the band; the lesson is the *answer*, not the band geometry |
+| Success/miss states | Binary (green flash + fireworks vs. grey settle) | Graded (bullseye / close / off) | Simpler to tune; matches Elevate; revisit if the binary feels too punishing |
 
 ---
 
@@ -210,4 +268,5 @@ Phases 2 and 3 are independent and can run in parallel — phase 2 is engine-sid
 ---
 
 *Generated: 2026-04-29T04:43:27Z*
-*Status: DRAFT — needs validation by building Phase 1*
+*Updated: 2026-05-01 — Phase 5 rewritten as Elevate-style UI rebuild; UI Spec section added*
+*Status: Phases 1–4 complete; Phase 5 ready for `/prp-plan`*

@@ -26,3 +26,24 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
     }),
   });
 }
+
+// jsdom doesn't implement PointerEvent. Polyfill it on top of MouseEvent so
+// `fireEvent.pointerDown(el, { clientY })` carries clientX/clientY through.
+if (typeof window !== "undefined" && typeof window.PointerEvent !== "function") {
+  class PointerEventPolyfill extends window.MouseEvent {
+    pointerId: number;
+    pointerType: string;
+    isPrimary: boolean;
+    constructor(type: string, init: PointerEventInit = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 0;
+      this.pointerType = init.pointerType ?? "";
+      this.isPrimary = init.isPrimary ?? false;
+    }
+  }
+  Object.defineProperty(window, "PointerEvent", {
+    writable: true,
+    configurable: true,
+    value: PointerEventPolyfill,
+  });
+}
