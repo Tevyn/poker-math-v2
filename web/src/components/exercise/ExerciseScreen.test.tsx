@@ -47,33 +47,33 @@ function stubBoundingRect(el: HTMLElement, rect: Partial<DOMRect> = {}) {
 describe("ExerciseScreen — equity render contract", () => {
   it("renders the prompt", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
   });
 
   it("renders four playing cards (two per hand)", async () => {
     const { container } = render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     const cards = container.querySelectorAll('[data-testid="playing-card"]');
     expect(cards.length).toBe(4);
   });
 
   it("mounts the estimation bar with vertical slider role", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     const slider = screen.getByRole("slider");
     expect(slider.getAttribute("aria-orientation")).toBe("vertical");
   });
 
   it("starts in the idle phase", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     const root = screen.getByTestId("exercise-screen");
     expect(root.getAttribute("data-screen-phase")).toBe("idle");
   });
 
   it("mounts the estimation bar with the equity prompt", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     expect(screen.getByText(/drag to estimate equity/i)).toBeTruthy();
   });
 });
@@ -84,7 +84,7 @@ describe("ExerciseScreen — equity defaulting", () => {
       new URLSearchParams("a=AsKs&b=QhQd"),
     );
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
   });
 
   it("defaults to equity when type is unknown", async () => {
@@ -92,7 +92,7 @@ describe("ExerciseScreen — equity defaulting", () => {
       new URLSearchParams("type=mystery&a=AsKs&b=QhQd"),
     );
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
   });
 });
 
@@ -103,7 +103,7 @@ describe("ExerciseScreen — phase transitions (equity)", () => {
 
   it("transitions idle → dragging → miss on a release outside tolerance", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     const root = screen.getByTestId("exercise-screen");
     const slider = screen.getByRole("slider") as HTMLElement;
     stubBoundingRect(slider);
@@ -118,7 +118,7 @@ describe("ExerciseScreen — phase transitions (equity)", () => {
 
   it("transitions to success when release is within tolerance", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/equity of Hand A/i);
+    await screen.findByText(/equity of Hero/i);
     const root = screen.getByTestId("exercise-screen");
     const slider = screen.getByRole("slider") as HTMLElement;
     stubBoundingRect(slider);
@@ -150,34 +150,34 @@ describe("ExerciseScreen — phase transitions (equity)", () => {
   });
 });
 
-describe("ExerciseScreen — pot-odds variant", () => {
+describe("ExerciseScreen — breakeven variant", () => {
   beforeEach(() => {
     useSearchParamsMock.mockReturnValue(
-      new URLSearchParams("type=pot-odds&pot=100&bet=50"),
+      new URLSearchParams("type=breakeven&pot=100&bet=50"),
     );
   });
 
-  it("renders the pot-odds prompt", async () => {
+  it("renders the breakeven prompt", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/% do you need to win/i);
+    await screen.findByText(/your breakeven %/i);
   });
 
-  it("does not render playing cards for pot-odds", async () => {
+  it("does not render playing cards for breakeven", async () => {
     const { container } = render(<ExerciseScreen />);
-    await screen.findByText(/% do you need to win/i);
+    await screen.findByText(/your breakeven %/i);
     expect(container.querySelectorAll('[data-testid="playing-card"]').length).toBe(0);
   });
 
   it("renders the pot and bet values", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/% do you need to win/i);
+    await screen.findByText(/your breakeven %/i);
     expect(screen.getByText("$100")).toBeTruthy();
     expect(screen.getByText("$50")).toBeTruthy();
   });
 
-  it("mounts the estimation bar with pot-odds prompt", async () => {
+  it("mounts the estimation bar with breakeven prompt", async () => {
     render(<ExerciseScreen />);
-    await screen.findByText(/% do you need to win/i);
-    expect(screen.getByText(/drag to estimate pot odds/i)).toBeTruthy();
+    await screen.findByText(/your breakeven %/i);
+    expect(screen.getByText(/drag to estimate breakeven/i)).toBeTruthy();
   });
 });

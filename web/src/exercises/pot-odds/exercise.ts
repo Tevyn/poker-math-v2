@@ -11,10 +11,10 @@ const POT_ODDS_TOLERANCE = 5;
 const POT_ODDS_ANCHORS: readonly number[] = [0, 20, 40, 60, 80, 100];
 
 export const potOddsExercise: Exercise<PotOddsProblem> = {
-  type: "pot-odds",
-  prompt: "What % do you need to win to call?",
-  tooltipLabel: "Required equity",
-  barPrompt: "drag to estimate pot odds",
+  type: "breakeven",
+  prompt: "What's your breakeven %?",
+  tooltipLabel: "Breakeven %",
+  barPrompt: "drag to estimate breakeven %",
   tolerance: POT_ODDS_TOLERANCE,
   axisAnchors: POT_ODDS_ANCHORS,
   formatValue: (n) => `${n.toFixed(1)}%`,

@@ -33,7 +33,7 @@ export function PlayingCard({ card }: PlayingCardProps) {
       data-rank={card.rank}
       data-suit={card.suit}
       aria-label={`${card.rank} of ${SUIT_NAME[card.suit]}`}
-      className={`flex h-28 w-16 flex-col items-center justify-between py-2 ${colorClass}`}
+      className={`flex h-28 w-16 flex-col items-center justify-between rounded-md border border-zinc-200 bg-white py-2 shadow-sm ${colorClass}`}
     >
       <span className="text-3xl font-bold leading-none">{card.rank}</span>
       <span className="text-3xl leading-none">{glyph}</span>

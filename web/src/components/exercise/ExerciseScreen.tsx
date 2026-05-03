@@ -150,20 +150,19 @@ export function ExerciseScreen() {
         transitionDuration,
       }}
     >
-      <h1 className="absolute left-0 right-0 top-6 text-center text-base font-medium tracking-tight text-zinc-700">
+      <h1 className="pointer-events-none absolute left-0 right-0 top-6 z-40 text-center text-base font-medium tracking-tight text-zinc-700">
         {exercise.prompt}
       </h1>
 
-      <div className="absolute bottom-24 left-4 top-20 w-12">
+      <div className="pointer-events-none absolute bottom-24 left-4 top-20 z-40 w-12">
         <Axis
           values={[...exercise.axisAnchors]}
           mode={phase.kind === "dragging" ? "dragging" : "idle"}
-          pointerValue={phase.kind === "dragging" ? phase.value : undefined}
         />
       </div>
 
       <div
-        className="absolute inset-0 flex items-center justify-center"
+        className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
         style={{
           opacity: stageOpacity,
           transitionProperty: "opacity",
@@ -174,7 +173,7 @@ export function ExerciseScreen() {
       </div>
 
       {isResolved ? (
-        <div className="pointer-events-none absolute inset-x-0 top-1/3 flex flex-col items-center gap-3">
+        <div className="pointer-events-none absolute inset-x-0 top-1/3 z-30 flex flex-col items-center gap-3">
           <span
             className={`text-lg font-semibold tracking-tight ${
               phase.kind === "success"
@@ -197,16 +196,18 @@ export function ExerciseScreen() {
       ) : null}
 
       {phase.kind === "success" ? (
-        <FireworkBurst
-          active={true}
-          durationMs={FIREWORK_DURATION_MS}
-          seed={problemKey}
-        />
+        <div className="pointer-events-none absolute inset-0 z-30">
+          <FireworkBurst
+            active={true}
+            durationMs={FIREWORK_DURATION_MS}
+            seed={problemKey}
+          />
+        </div>
       ) : null}
 
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 z-10"
         style={{
           backgroundColor: "var(--color-overlay)",
           opacity: overlayOpacity,

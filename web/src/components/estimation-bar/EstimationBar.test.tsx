@@ -129,6 +129,27 @@ describe("EstimationBar — gesture", () => {
     expect(withinTolerance).toBe(true);
   });
 
+  it("renders the active bar with height = 2 × tolerance over (max - min)", () => {
+    const { container } = render(
+      <EstimationBar truth={50} tolerance={10} min={0} max={100} />,
+    );
+    const bar = container.querySelector(
+      "[data-bar-active]",
+    ) as HTMLElement | null;
+    expect(bar).not.toBeNull();
+    expect(bar!.style.height).toBe("20%");
+  });
+
+  it("scales the active bar height with smaller tolerance", () => {
+    const { container } = render(
+      <EstimationBar truth={50} tolerance={5} min={0} max={100} />,
+    );
+    const bar = container.querySelector(
+      "[data-bar-active]",
+    ) as HTMLElement | null;
+    expect(bar!.style.height).toBe("10%");
+  });
+
   it("ignores pointerDown above the idle bar", () => {
     const onRelease = vi.fn();
     const { getByRole } = render(

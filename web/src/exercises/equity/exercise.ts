@@ -7,7 +7,7 @@ const EQUITY_ANCHORS: readonly number[] = [0, 20, 40, 60, 80, 100];
 
 export const equityExercise: Exercise<HandPair> = {
   type: "equity",
-  prompt: "What's the equity of Hand A?",
+  prompt: "What's the equity of Hero?",
   tooltipLabel: "Actual Equity",
   barPrompt: "drag to estimate equity",
   tolerance: EQUITY_TOLERANCE,

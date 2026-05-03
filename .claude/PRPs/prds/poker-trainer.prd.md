@@ -190,7 +190,8 @@ Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
 | 3 | Estimation slider primitive | Vertical drag-to-estimate React component with tolerance bands, Pointer Events, mobile-tested | complete | - | - | [plan](.claude/PRPs/plans/completed/estimation-slider-primitive.plan.md) · [report](.claude/PRPs/reports/estimation-slider-primitive-report.md) |
 | 4 | Exercise screen | Compose hand display + slider + feedback animation into one screen; URL-seeded problems | complete | - | 1, 2, 3 | [plan](.claude/PRPs/plans/completed/exercise-screen.plan.md) · [report](.claude/PRPs/reports/exercise-screen-report.md) |
 | 5 | Elevate-style UI rebuild | Replace vertical-track slider with bottom-bar-lift interaction; rebuild screen to match Elevate gameplay layout (idle / dragging / success / miss states) | complete | - | 4 | [plan](.claude/PRPs/plans/completed/elevate-style-ui-rebuild.plan.md) · [report](.claude/PRPs/reports/elevate-style-ui-rebuild-report.md) |
-| 6 | Second exercise (Pot Odds) + config-driven shell | Refactor `ExerciseScreen` into a shell driven by an `Exercise<TProblem>` definition; ship Pot Odds as the second exercise to pressure-test reuse and resolve the bespoke-vs-shared open question | planned | - | 5 | [plan](.claude/PRPs/plans/second-exercise-pot-odds.plan.md) |
+| 6 | Second exercise (Pot Odds) + config-driven shell | Refactor `ExerciseScreen` into a shell driven by an `Exercise<TProblem>` definition; ship Pot Odds as the second exercise to pressure-test reuse and resolve the bespoke-vs-shared open question | complete | - | 5 | [plan](.claude/PRPs/plans/completed/second-exercise-pot-odds.plan.md) · [report](.claude/PRPs/reports/second-exercise-pot-odds-report.md) |
+| 7 | Visual polish pass | Tighten the shared exercise shell after first round of hands-on use: drag-bar layering + tolerance-sized height, lighter dragging overlay, denser Y-axis hatches, card chrome on equity, Hero/Villain copy, "Breakeven %" rename, axis pointer removal, longer reveal dwell | in-progress | - | 6 | [plan](.claude/PRPs/plans/visual-polish-pass.plan.md) |
 
 ### Phase Details
 
@@ -228,6 +229,21 @@ Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
   - Reduced-motion path: instant transitions, no fireworks.
 - **Success signal**: Side-by-side with the Elevate reference video, the loop reads as the same primitive applied to poker. Owner would show this to a friend without apologizing.
 - **Out of phase scope**: Multiple exercise types, additional tolerance schemes, miss-vs-bullseye gradient (binary green/grey only), settings, score persistence.
+
+**Phase 7: Visual polish pass**
+- **Goal**: Tighten the shared exercise shell after first round of hands-on play. No new exercises, no new primitives — every item refines a component that already shipped.
+- **Scope** (each item must be addressed; all live in the shared shell so the change applies to both Equity and Pot Odds / Breakeven % screens):
+  1. **Drag bar z-order.** The cyan drag bar should render *behind* the hands / problem content while remaining the active drag target. The bar is currently visually occluding the problem during dragging; pointer events stay on the bar but it should not paint over the prompt content.
+  2. **Drag bar height = tolerance band.** The cyan bar's height in axis units equals `2 × tolerance`. With ±10% tolerance, the bar spans 20% of the axis height. The bar is the tolerance band — make that legible by construction rather than having a separate band visualization.
+  3. **Lighter dragging overlay.** Reduce the dark overlay opacity to roughly a quarter of its current value. The hands should remain readable through the overlay; current opacity reads as "modal" rather than "ambient dim."
+  4. **Denser Y-axis hatches.** Keep current labeled tick marks every 10% (0, 10, 20, …, 100) and add an unlabeled minor tick at every 5% (5, 15, 25, …, 95). Minor ticks are visually lighter / shorter than labeled ones.
+  5. **Card chrome on Equity screen.** Each hand card gets a thin outline and subtle drop shadow so it reads as a physical card rather than flat type. Pot Odds / Breakeven % screen is unaffected (it has no cards).
+  6. **Hero / Villain copy.** Replace "Hand A" / "Hand B" labels with "Hero" / "Villain" everywhere they appear (equity exercise prompt, any helper text). This is the standard poker convention and what the owner thinks in.
+  7. **Rename Pot Odds → Breakeven %.** The exercise type currently registered as "pot odds" is presented to the user as "Breakeven %." Update display strings, route slug if user-visible, and any in-app copy. Internal symbol names may stay or be renamed at the implementer's discretion — user-facing strings are the requirement.
+  8. **Remove axis pointer triangle.** The small cyan triangle / arrow that tracks the Y-axis during dragging is removed. The cyan bar itself is the indicator.
+  9. **Longer reveal dwell.** Add ~1 second to both success and miss dwell times before auto-advance (success ~1.2s → ~2.2s, miss ~1.8s → ~2.8s; tune by feel). The current cycle reads as too fast to actually absorb the actual-equity number.
+- **Success signal**: Owner can play a session of mixed Equity + Breakeven % problems and report nothing visually distracting; specifically, the drag bar no longer feels like an opaque guillotine over the problem, and "actual equity" registers before the screen advances.
+- **Out of phase scope**: New exercise types, animation system overhaul, theme work, accessibility audit, persisted scoring.
 
 ### Parallelism Notes
 
@@ -271,4 +287,6 @@ Phases 2 and 3 are independent and can run in parallel — phase 2 is engine-sid
 *Generated: 2026-04-29T04:43:27Z*
 *Updated: 2026-05-01 — Phase 5 rewritten as Elevate-style UI rebuild; UI Spec section added*
 *Updated: 2026-05-02 — Phase 5 marked complete; Phase 6 added (second exercise + config-driven shell)*
-*Status: Phases 1–5 complete; Phase 6 ready for `/prp-implement`*
+*Updated: 2026-05-02 — Phase 6 marked complete; Phase 7 added (visual polish pass from first hands-on session)*
+*Updated: 2026-05-02 — Phase 7 marked complete; report at `.claude/PRPs/reports/visual-polish-pass-report.md`*
+*Status: Phases 1–7 complete*

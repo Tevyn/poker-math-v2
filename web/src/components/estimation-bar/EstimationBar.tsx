@@ -104,6 +104,7 @@ export function EstimationBar({
   };
 
   const valueTopPct = (1 - fractionFromValue(value, min, max)) * 100;
+  const barHeightPct = ((2 * tolerance) / (max - min)) * 100;
 
   // Idle: pill-shaped control near the bottom of the screen.
   // Dragging/released: full-width cyan bar positioned at the value height.
@@ -129,11 +130,12 @@ export function EstimationBar({
       data-released={released ? "true" : "false"}
       data-dragging={dragging ? "true" : "false"}
     >
-      {/* Idle bar: pill near bottom */}
+      {/* Idle bar: pill near bottom — must sit above stage so the prompt
+          stays visible at rest */}
       <div
         aria-hidden
         data-bar-idle
-        className="pointer-events-none absolute inset-x-4 bottom-4 flex h-14 items-center justify-center rounded-full bg-(--color-control-idle)"
+        className="pointer-events-none absolute inset-x-4 bottom-4 z-30 flex h-14 items-center justify-center rounded-full bg-(--color-control-idle)"
         style={{
           opacity: showAsBar ? 0 : 1,
           transitionProperty: "opacity",
@@ -147,13 +149,15 @@ export function EstimationBar({
           ↑
         </span>
       </div>
-      {/* Active bar: full-width cyan band positioned at value height */}
+      {/* Active bar: full-width cyan band sized to the tolerance window
+          (height = 2 × tolerance), painted behind the stage. */}
       <div
         aria-hidden
         data-bar-active
-        className="pointer-events-none absolute inset-x-0 h-12 bg-(--color-cyan-bar)"
+        className="pointer-events-none absolute inset-x-0 z-0 bg-(--color-cyan-bar)"
         style={{
           top: `${valueTopPct}%`,
+          height: `${barHeightPct}%`,
           transform: "translateY(-50%)",
           opacity: showAsBar ? 1 : 0,
           transitionProperty: "opacity",

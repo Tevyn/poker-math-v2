@@ -8,27 +8,27 @@ export interface AxisProps {
   min?: number;
   max?: number;
   mode: "idle" | "dragging";
-  pointerValue?: number;
 }
 
-export function Axis({
-  values,
-  min = 0,
-  max = 100,
-  mode,
-  pointerValue,
-}: AxisProps) {
+const MINOR_TICK_STEP = 5;
+
+export function Axis({ values, min = 0, max = 100, mode }: AxisProps) {
   const reducedMotion = useReducedMotion();
   const isDragging = mode === "dragging";
 
-  const lineColor = isDragging
-    ? "border-zinc-100/70"
-    : "border-zinc-300";
-  const labelColor = isDragging
-    ? "text-zinc-100"
-    : "text-zinc-500";
-  const tickColor = isDragging ? "bg-zinc-100" : "bg-zinc-400";
+  const lineColor = isDragging ? "border-zinc-400" : "border-zinc-300";
+  const labelColor = isDragging ? "text-zinc-700" : "text-zinc-500";
+  const tickColor = isDragging ? "bg-zinc-500" : "bg-zinc-400";
+  const minorTickColor = isDragging ? "bg-zinc-400" : "bg-zinc-300";
   const transition = reducedMotion ? "0ms" : "200ms";
+
+  const minors: number[] = [];
+  if (values.length > 0) {
+    const valuesSet = new Set(values);
+    for (let v = min + MINOR_TICK_STEP; v < max; v += MINOR_TICK_STEP) {
+      if (!valuesSet.has(v)) minors.push(v);
+    }
+  }
 
   return (
     <div
@@ -73,26 +73,26 @@ export function Axis({
           </div>
         );
       })}
-      {pointerValue !== undefined ? (
-        <div
-          aria-hidden
-          data-axis-pointer
-          className="pointer-events-none absolute left-6"
-          style={{
-            top: `${(1 - fractionFromValue(pointerValue, min, max)) * 100}%`,
-            transform: "translateY(-50%)",
-          }}
-        >
-          <span
-            className="block h-0 w-0"
-            style={{
-              borderTop: "6px solid transparent",
-              borderBottom: "6px solid transparent",
-              borderLeft: "8px solid var(--color-cyan-bar)",
-            }}
-          />
-        </div>
-      ) : null}
+      {minors.map((v) => {
+        const topPct = (1 - fractionFromValue(v, min, max)) * 100;
+        return (
+          <div
+            key={`minor-${v}`}
+            aria-hidden
+            data-axis-tick-minor
+            className="absolute left-0 flex items-center"
+            style={{ top: `${topPct}%`, transform: "translateY(-50%)" }}
+          >
+            <span
+              className={`ml-0.5 block h-px w-1 ${minorTickColor}`}
+              style={{
+                transitionProperty: "background-color",
+                transitionDuration: transition,
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
