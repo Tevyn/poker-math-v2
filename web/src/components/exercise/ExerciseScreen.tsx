@@ -3,20 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EstimationBar } from "@/components/estimation-bar";
-import { EquityAxis } from "@/components/equity-axis";
+import { Axis } from "@/components/axis";
 import {
-  ActualEquityTooltip,
+  ActualValueTooltip,
   FireworkBurst,
   pickPhrase,
 } from "@/components/feedback";
 import { getEngine, type EngineApi } from "@/lib/engine";
 import { useAutoAdvance } from "@/hooks/useAutoAdvance";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { HandDisplay } from "./HandDisplay";
-import { isValidHandPair, randomHandPair } from "./problem";
+import { getExerciseByType } from "@/exercises/registry";
+import type { Exercise } from "@/exercises/types";
 import {
-  EQUITY_ANCHORS,
-  EQUITY_TOLERANCE,
   SUCCESS_HOLD_MS,
   MISS_HOLD_MS,
   FIREWORK_DURATION_MS,
@@ -54,36 +52,50 @@ export function ExerciseScreen() {
     };
   }, []);
 
-  const urlA = searchParams.get("a") ?? "";
-  const urlB = searchParams.get("b") ?? "";
-  const urlValid = isValidHandPair(urlA, urlB);
+  const exercise = useMemo<Exercise<unknown>>(
+    () => getExerciseByType(searchParams.get("type")),
+    [searchParams],
+  );
 
-  const problem = useMemo(() => {
-    if (urlValid) return { a: urlA, b: urlB };
-    return randomHandPair();
-  }, [urlA, urlB, urlValid]);
+  const problem = useMemo<unknown>(() => {
+    const parsed = exercise.parseProblem(
+      new URLSearchParams(searchParams.toString()),
+    );
+    return parsed ?? exercise.generateProblem();
+  }, [exercise, searchParams]);
 
   useEffect(() => {
-    if (!urlValid) {
-      const params = new URLSearchParams({ a: problem.a, b: problem.b });
+    const parsed = exercise.parseProblem(
+      new URLSearchParams(searchParams.toString()),
+    );
+    if (parsed === null || searchParams.get("type") === null) {
+      const params = new URLSearchParams({
+        type: exercise.type,
+        ...exercise.serializeProblem(problem),
+      });
       router.replace(`?${params.toString()}`);
     }
-  }, [urlValid, problem.a, problem.b, router]);
+  }, [exercise, problem, searchParams, router]);
 
-  const truthPercent = useMemo(() => {
-    if (api === null) return null;
-    try {
-      return api.equityVs(problem.a, problem.b) * 100;
-    } catch {
-      return null;
-    }
-  }, [api, problem.a, problem.b]);
+  const truthPercent = useMemo(
+    () => exercise.computeTruth(problem, api),
+    [exercise, problem, api],
+  );
 
-  const problemKey = `${problem.a}${problem.b}`;
+  const problemKey = `${exercise.type}|${exercise.problemKey(problem)}`;
+
+  const [prevProblemKey, setPrevProblemKey] = useState(problemKey);
+  if (prevProblemKey !== problemKey) {
+    setPrevProblemKey(problemKey);
+    setPhase({ kind: "idle" });
+  }
 
   const onNext = () => {
-    const next = randomHandPair();
-    const params = new URLSearchParams({ a: next.a, b: next.b });
+    const next = exercise.generateProblem();
+    const params = new URLSearchParams({
+      type: exercise.type,
+      ...exercise.serializeProblem(next),
+    });
     setPhase({ kind: "idle" });
     router.replace(`?${params.toString()}`);
   };
@@ -99,7 +111,7 @@ export function ExerciseScreen() {
       </main>
     );
   }
-  if (api === null || truthPercent === null) {
+  if (truthPercent === null) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-6">
         <p className="text-zinc-500">loading…</p>
@@ -111,8 +123,6 @@ export function ExerciseScreen() {
     ? "0ms"
     : `${RELEASE_TRANSITION_MS}ms`;
 
-  // Surface color responds to phase: idle/dragging are white, success flashes
-  // green, miss settles to soft grey.
   const surfaceColor =
     phase.kind === "success"
       ? "var(--color-success-flash)"
@@ -121,11 +131,13 @@ export function ExerciseScreen() {
         : "#ffffff";
 
   const overlayOpacity = phase.kind === "dragging" ? 1 : 0;
-  const handsOpacity = phase.kind === "dragging" ? 0.3 : 1;
+  const stageOpacity = phase.kind === "dragging" ? 0.3 : 1;
 
   const verdictCopy = isResolved
     ? pickPhrase(problemKey, phase.kind === "success" ? "success" : "miss")
     : "";
+
+  const Stage = exercise.Stage;
 
   return (
     <main
@@ -139,38 +151,28 @@ export function ExerciseScreen() {
       }}
     >
       <h1 className="absolute left-0 right-0 top-6 text-center text-base font-medium tracking-tight text-zinc-700">
-        What&rsquo;s the equity of Hand A?
+        {exercise.prompt}
       </h1>
 
-      {/* Left-edge axis */}
       <div className="absolute bottom-24 left-4 top-20 w-12">
-        <EquityAxis
-          values={EQUITY_ANCHORS}
+        <Axis
+          values={[...exercise.axisAnchors]}
           mode={phase.kind === "dragging" ? "dragging" : "idle"}
-          pointerValue={
-            phase.kind === "dragging" ? phase.value : undefined
-          }
+          pointerValue={phase.kind === "dragging" ? phase.value : undefined}
         />
       </div>
 
-      {/* Centered hands */}
-      <section
-        aria-label="Problem"
-        className="absolute inset-0 flex flex-col items-center justify-center gap-4"
+      <div
+        className="absolute inset-0 flex items-center justify-center"
         style={{
-          opacity: handsOpacity,
+          opacity: stageOpacity,
           transitionProperty: "opacity",
           transitionDuration,
         }}
       >
-        <HandDisplay hand={problem.a} />
-        <span className="text-xs uppercase tracking-wider text-zinc-500">
-          vs
-        </span>
-        <HandDisplay hand={problem.b} />
-      </section>
+        <Stage problem={problem} />
+      </div>
 
-      {/* Verdict copy + tooltip */}
       {isResolved ? (
         <div className="pointer-events-none absolute inset-x-0 top-1/3 flex flex-col items-center gap-3">
           <span
@@ -182,18 +184,18 @@ export function ExerciseScreen() {
           >
             {verdictCopy}
           </span>
-          <ActualEquityTooltip
-            percent={
+          <ActualValueTooltip
+            label={exercise.tooltipLabel}
+            formattedValue={exercise.formatValue(
               phase.kind === "success" || phase.kind === "miss"
                 ? phase.truthPercent
-                : 0
-            }
+                : 0,
+            )}
             visible={true}
           />
         </div>
       ) : null}
 
-      {/* Firework burst on success only */}
       {phase.kind === "success" ? (
         <FireworkBurst
           active={true}
@@ -202,7 +204,6 @@ export function ExerciseScreen() {
         />
       ) : null}
 
-      {/* Dragging overlay */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -214,20 +215,17 @@ export function ExerciseScreen() {
         }}
       />
 
-      {/* Estimation bar (full-screen pointer surface) */}
       <EstimationBar
         key={problemKey}
         min={0}
         max={100}
         truth={truthPercent}
-        tolerance={EQUITY_TOLERANCE}
-        ariaLabel="Estimate Hand A equity"
-        promptCopy="drag to estimate equity"
+        tolerance={exercise.tolerance}
+        ariaLabel="Estimate value"
+        promptCopy={exercise.barPrompt}
         onValueChange={(value) => {
           setPhase((prev) =>
-            prev.kind === "dragging"
-              ? { kind: "dragging", value }
-              : prev,
+            prev.kind === "dragging" ? { kind: "dragging", value } : prev,
           );
         }}
         onDraggingChange={(dragging) => {

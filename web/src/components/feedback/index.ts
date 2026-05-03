@@ -1,5 +1,5 @@
-export { ActualEquityTooltip } from "./ActualEquityTooltip";
-export type { ActualEquityTooltipProps } from "./ActualEquityTooltip";
+export { ActualValueTooltip } from "./ActualValueTooltip";
+export type { ActualValueTooltipProps } from "./ActualValueTooltip";
 export { FireworkBurst } from "./FireworkBurst";
 export type { FireworkBurstProps } from "./FireworkBurst";
 export {

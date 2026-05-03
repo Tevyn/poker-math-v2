@@ -3,7 +3,7 @@
 import { fractionFromValue } from "@/lib/sliderMath";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
-export interface EquityAxisProps {
+export interface AxisProps {
   values: readonly number[];
   min?: number;
   max?: number;
@@ -11,13 +11,13 @@ export interface EquityAxisProps {
   pointerValue?: number;
 }
 
-export function EquityAxis({
+export function Axis({
   values,
   min = 0,
   max = 100,
   mode,
   pointerValue,
-}: EquityAxisProps) {
+}: AxisProps) {
   const reducedMotion = useReducedMotion();
   const isDragging = mode === "dragging";
 
@@ -32,7 +32,7 @@ export function EquityAxis({
 
   return (
     <div
-      data-testid="equity-axis"
+      data-testid="axis"
       data-mode={mode}
       className="relative h-full w-12 select-none"
     >

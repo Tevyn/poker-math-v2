@@ -2,20 +2,22 @@
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
-export interface ActualEquityTooltipProps {
-  percent: number;
+export interface ActualValueTooltipProps {
+  label: string;
+  formattedValue: string;
   visible: boolean;
 }
 
-export function ActualEquityTooltip({
-  percent,
+export function ActualValueTooltip({
+  label,
+  formattedValue,
   visible,
-}: ActualEquityTooltipProps) {
+}: ActualValueTooltipProps) {
   const reducedMotion = useReducedMotion();
   const transitionDuration = reducedMotion ? "0ms" : "240ms";
   return (
     <div
-      data-testid="actual-equity-tooltip"
+      data-testid="actual-value-tooltip"
       data-visible={visible ? "true" : "false"}
       aria-live="polite"
       className="relative rounded-2xl bg-white px-6 py-4 shadow-xl"
@@ -28,13 +30,13 @@ export function ActualEquityTooltip({
       }}
     >
       <span className="block text-center text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-        Actual Equity
+        {label}
       </span>
       <span
         className="block text-center font-bold leading-none text-zinc-900"
         style={{ fontSize: "clamp(2.5rem, 8vw, 4.5rem)" }}
       >
-        {percent.toFixed(1)}%
+        {formattedValue}
       </span>
       <span
         aria-hidden

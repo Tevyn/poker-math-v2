@@ -4,13 +4,20 @@ import { ExerciseScreen } from "./ExerciseScreen";
 import { SUCCESS_HOLD_MS } from "./exerciseConfig";
 
 const replaceMock = vi.fn();
+const useSearchParamsMock = vi.fn(
+  () => new URLSearchParams("type=equity&a=AsKs&b=QhQd"),
+);
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: replaceMock, push: vi.fn() }),
-  useSearchParams: () => new URLSearchParams("a=AsKs&b=QhQd"),
+  useSearchParams: () => useSearchParamsMock(),
 }));
 
 beforeEach(() => {
   replaceMock.mockClear();
+  useSearchParamsMock.mockReturnValue(
+    new URLSearchParams("type=equity&a=AsKs&b=QhQd"),
+  );
 });
 
 function stubPointerCapture(el: HTMLElement) {
@@ -37,7 +44,7 @@ function stubBoundingRect(el: HTMLElement, rect: Partial<DOMRect> = {}) {
     }) as DOMRect;
 }
 
-describe("ExerciseScreen — render contract", () => {
+describe("ExerciseScreen — equity render contract", () => {
   it("renders the prompt", async () => {
     render(<ExerciseScreen />);
     await screen.findByText(/equity of Hand A/i);
@@ -63,9 +70,33 @@ describe("ExerciseScreen — render contract", () => {
     const root = screen.getByTestId("exercise-screen");
     expect(root.getAttribute("data-screen-phase")).toBe("idle");
   });
+
+  it("mounts the estimation bar with the equity prompt", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/equity of Hand A/i);
+    expect(screen.getByText(/drag to estimate equity/i)).toBeTruthy();
+  });
 });
 
-describe("ExerciseScreen — phase transitions", () => {
+describe("ExerciseScreen — equity defaulting", () => {
+  it("defaults to equity when type is missing", async () => {
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams("a=AsKs&b=QhQd"),
+    );
+    render(<ExerciseScreen />);
+    await screen.findByText(/equity of Hand A/i);
+  });
+
+  it("defaults to equity when type is unknown", async () => {
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams("type=mystery&a=AsKs&b=QhQd"),
+    );
+    render(<ExerciseScreen />);
+    await screen.findByText(/equity of Hand A/i);
+  });
+});
+
+describe("ExerciseScreen — phase transitions (equity)", () => {
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -78,11 +109,9 @@ describe("ExerciseScreen — phase transitions", () => {
     stubBoundingRect(slider);
     stubPointerCapture(slider);
 
-    // pointerDown near the bottom of the screen (inside the idle bar zone)
     fireEvent.pointerDown(slider, { pointerId: 1, clientY: 780 });
     expect(root.getAttribute("data-screen-phase")).toBe("dragging");
 
-    // release at the very top → value=100 (truth for AsKs vs QhQd is ~46)
     fireEvent.pointerUp(slider, { pointerId: 1, clientY: 0 });
     expect(root.getAttribute("data-screen-phase")).toBe("miss");
   });
@@ -96,7 +125,6 @@ describe("ExerciseScreen — phase transitions", () => {
     stubPointerCapture(slider);
 
     fireEvent.pointerDown(slider, { pointerId: 1, clientY: 780 });
-    // release near midpoint (clientY=400 → value=50, truth ~46.3, tol=10)
     fireEvent.pointerUp(slider, { pointerId: 1, clientY: 400 });
     expect(root.getAttribute("data-screen-phase")).toBe("success");
   });
@@ -119,5 +147,37 @@ describe("ExerciseScreen — phase transitions", () => {
       vi.advanceTimersByTime(SUCCESS_HOLD_MS);
     });
     expect(replaceMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ExerciseScreen — pot-odds variant", () => {
+  beforeEach(() => {
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams("type=pot-odds&pot=100&bet=50"),
+    );
+  });
+
+  it("renders the pot-odds prompt", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/% do you need to win/i);
+  });
+
+  it("does not render playing cards for pot-odds", async () => {
+    const { container } = render(<ExerciseScreen />);
+    await screen.findByText(/% do you need to win/i);
+    expect(container.querySelectorAll('[data-testid="playing-card"]').length).toBe(0);
+  });
+
+  it("renders the pot and bet values", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/% do you need to win/i);
+    expect(screen.getByText("$100")).toBeTruthy();
+    expect(screen.getByText("$50")).toBeTruthy();
+  });
+
+  it("mounts the estimation bar with pot-odds prompt", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/% do you need to win/i);
+    expect(screen.getByText(/drag to estimate pot odds/i)).toBeTruthy();
   });
 });

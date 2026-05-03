@@ -1,7 +1,3 @@
-export const EQUITY_TOLERANCE = 10;
-
-export const EQUITY_ANCHORS: readonly number[] = [0, 20, 40, 60, 80, 100];
-
 export const SUCCESS_HOLD_MS = 1200;
 
 export const MISS_HOLD_MS = 1800;

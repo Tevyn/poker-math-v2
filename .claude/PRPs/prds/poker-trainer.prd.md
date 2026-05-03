@@ -189,7 +189,8 @@ Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
 | 2 | Equity engine API | Expose `equity_vs(hand_a, hand_b)` from Rust via wasm-bindgen; property test against `pokers` | complete | - | - | [plan](.claude/PRPs/plans/completed/equity-engine-api.plan.md) · [report](.claude/PRPs/reports/equity-engine-api-report.md) |
 | 3 | Estimation slider primitive | Vertical drag-to-estimate React component with tolerance bands, Pointer Events, mobile-tested | complete | - | - | [plan](.claude/PRPs/plans/completed/estimation-slider-primitive.plan.md) · [report](.claude/PRPs/reports/estimation-slider-primitive-report.md) |
 | 4 | Exercise screen | Compose hand display + slider + feedback animation into one screen; URL-seeded problems | complete | - | 1, 2, 3 | [plan](.claude/PRPs/plans/completed/exercise-screen.plan.md) · [report](.claude/PRPs/reports/exercise-screen-report.md) |
-| 5 | Elevate-style UI rebuild | Replace vertical-track slider with bottom-bar-lift interaction; rebuild screen to match Elevate gameplay layout (idle / dragging / success / miss states) | in-progress | - | 4 | [plan](.claude/PRPs/plans/elevate-style-ui-rebuild.plan.md) |
+| 5 | Elevate-style UI rebuild | Replace vertical-track slider with bottom-bar-lift interaction; rebuild screen to match Elevate gameplay layout (idle / dragging / success / miss states) | complete | - | 4 | [plan](.claude/PRPs/plans/completed/elevate-style-ui-rebuild.plan.md) · [report](.claude/PRPs/reports/elevate-style-ui-rebuild-report.md) |
+| 6 | Second exercise (Pot Odds) + config-driven shell | Refactor `ExerciseScreen` into a shell driven by an `Exercise<TProblem>` definition; ship Pot Odds as the second exercise to pressure-test reuse and resolve the bespoke-vs-shared open question | planned | - | 5 | [plan](.claude/PRPs/plans/second-exercise-pot-odds.plan.md) |
 
 ### Phase Details
 
@@ -269,4 +270,5 @@ Phases 2 and 3 are independent and can run in parallel — phase 2 is engine-sid
 
 *Generated: 2026-04-29T04:43:27Z*
 *Updated: 2026-05-01 — Phase 5 rewritten as Elevate-style UI rebuild; UI Spec section added*
-*Status: Phases 1–4 complete; Phase 5 ready for `/prp-plan`*
+*Updated: 2026-05-02 — Phase 5 marked complete; Phase 6 added (second exercise + config-driven shell)*
+*Status: Phases 1–5 complete; Phase 6 ready for `/prp-implement`*
