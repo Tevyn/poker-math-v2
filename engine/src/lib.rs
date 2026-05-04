@@ -1,6 +1,6 @@
-use pokers::{exact_equity, HandRange, SimulatorError};
-use std::sync::atomic::AtomicBool;
+use pokers::{HandRange, SimulatorError, exact_equity};
 use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -16,11 +16,12 @@ fn compute_equity(hand_a: &str, hand_b: &str) -> Result<f32, String> {
     }
 
     let cancel_token = Arc::new(AtomicBool::new(false));
-    let result = exact_equity(&ranges, 0u64, 0u64, 1, cancel_token, |_progress: u8| {})
-        .map_err(|e| match e {
+    let result = exact_equity(&ranges, 0u64, 0u64, 1, cancel_token, |_progress: u8| {}).map_err(
+        |e| match e {
             SimulatorError::ConflictingRanges => "hands conflict".to_string(),
             other => format!("equity failed: {other:?}"),
-        })?;
+        },
+    )?;
 
     Ok(result.equities[0] as f32)
 }
