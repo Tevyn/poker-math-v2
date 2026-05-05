@@ -29,6 +29,27 @@ function equity_vs(hand_a, hand_b) {
     return ret[0];
 }
 exports.equity_vs = equity_vs;
+
+/**
+ * @param {string} hero_combo
+ * @param {string} villain_range
+ * @param {string} flop
+ * @returns {number}
+ */
+function equity_vs_range_flop(hero_combo, villain_range, flop) {
+    const ptr0 = passStringToWasm0(hero_combo, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(villain_range, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passStringToWasm0(flop, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ret = wasm.equity_vs_range_flop(ptr0, len0, ptr1, len1, ptr2, len2);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0];
+}
+exports.equity_vs_range_flop = equity_vs_range_flop;
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,

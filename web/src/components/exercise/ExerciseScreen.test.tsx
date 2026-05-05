@@ -150,6 +150,49 @@ describe("ExerciseScreen — phase transitions (equity)", () => {
   });
 });
 
+describe("ExerciseScreen — hand-vs-range variant", () => {
+  beforeEach(() => {
+    useSearchParamsMock.mockReturnValue(
+      new URLSearchParams(
+        "type=hand-vs-range&hero=AsKs&range=btn_open&board=Kh7d2c",
+      ),
+    );
+  });
+
+  it("renders the hand-vs-range prompt", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/Hero's equity on the flop/i);
+  });
+
+  it("renders the villain range name", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/Hero's equity on the flop/i);
+    expect(screen.getByText(/BTN open/i)).toBeTruthy();
+  });
+
+  it("renders five playing cards (3 board + 2 hero)", async () => {
+    const { container } = render(<ExerciseScreen />);
+    await screen.findByText(/Hero's equity on the flop/i);
+    const cards = container.querySelectorAll('[data-testid="playing-card"]');
+    expect(cards.length).toBe(5);
+  });
+
+  it("renders 169 grid cells", async () => {
+    const { container } = render(<ExerciseScreen />);
+    await screen.findByText(/Hero's equity on the flop/i);
+    const cells = container.querySelectorAll(
+      '[role="img"][aria-label="Villain range grid"] > div',
+    );
+    expect(cells.length).toBe(169);
+  });
+
+  it("mounts the estimation bar with the equity prompt", async () => {
+    render(<ExerciseScreen />);
+    await screen.findByText(/Hero's equity on the flop/i);
+    expect(screen.getByText(/drag to estimate equity/i)).toBeTruthy();
+  });
+});
+
 describe("ExerciseScreen — breakeven variant", () => {
   beforeEach(() => {
     useSearchParamsMock.mockReturnValue(

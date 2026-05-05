@@ -34,6 +34,26 @@ describe("EngineApi.equityVs", () => {
   });
 });
 
+describe("EngineApi.equityVsRangeFlop", () => {
+  it("returns a finite number in [0, 1] for AKs vs premium pairs on a K-high flop", async () => {
+    const api = await getEngine();
+    const eq = api.equityVsRangeFlop("AsKs", "AA,KK,QQ,JJ,TT", "Kh7d2c");
+    expect(Number.isFinite(eq)).toBe(true);
+    expect(eq).toBeGreaterThanOrEqual(0);
+    expect(eq).toBeLessThanOrEqual(1);
+  });
+
+  it("throws on garbage hero combo", async () => {
+    const api = await getEngine();
+    expect(() => api.equityVsRangeFlop("garbage", "AA", "Kh7d2c")).toThrow();
+  });
+
+  it("throws when hero combo conflicts with the board", async () => {
+    const api = await getEngine();
+    expect(() => api.equityVsRangeFlop("AsKs", "QQ", "AsKh2d")).toThrow();
+  });
+});
+
 // Reference range-vs-range equities from cardfight.com and standard
 // preflop charts. equityVs accepts pokers range strings, so passing
 // "AKs"/"QQ" gives the canonical, suit-averaged number.

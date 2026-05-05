@@ -191,7 +191,8 @@ Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
 | 4 | Exercise screen | Compose hand display + slider + feedback animation into one screen; URL-seeded problems | complete | - | 1, 2, 3 | [plan](.claude/PRPs/plans/completed/exercise-screen.plan.md) · [report](.claude/PRPs/reports/exercise-screen-report.md) |
 | 5 | Elevate-style UI rebuild | Replace vertical-track slider with bottom-bar-lift interaction; rebuild screen to match Elevate gameplay layout (idle / dragging / success / miss states) | complete | - | 4 | [plan](.claude/PRPs/plans/completed/elevate-style-ui-rebuild.plan.md) · [report](.claude/PRPs/reports/elevate-style-ui-rebuild-report.md) |
 | 6 | Second exercise (Pot Odds) + config-driven shell | Refactor `ExerciseScreen` into a shell driven by an `Exercise<TProblem>` definition; ship Pot Odds as the second exercise to pressure-test reuse and resolve the bespoke-vs-shared open question | complete | - | 5 | [plan](.claude/PRPs/plans/completed/second-exercise-pot-odds.plan.md) · [report](.claude/PRPs/reports/second-exercise-pot-odds-report.md) |
-| 7 | Visual polish pass | Tighten the shared exercise shell after first round of hands-on use: drag-bar layering + tolerance-sized height, lighter dragging overlay, denser Y-axis hatches, card chrome on equity, Hero/Villain copy, "Breakeven %" rename, axis pointer removal, longer reveal dwell | in-progress | - | 6 | [plan](.claude/PRPs/plans/visual-polish-pass.plan.md) |
+| 7 | Visual polish pass | Tighten the shared exercise shell after first round of hands-on use: drag-bar layering + tolerance-sized height, lighter dragging overlay, denser Y-axis hatches, card chrome on equity, Hero/Villain copy, "Breakeven %" rename, axis pointer removal, longer reveal dwell | complete | - | 6 | [plan](.claude/PRPs/plans/completed/visual-polish-pass.plan.md) · [report](.claude/PRPs/reports/visual-polish-pass-report.md) |
+| 8 | Hand vs range, flop equity | Third exercise: estimate Hero's equity vs a Villain range on a random flop. Stretches the engine on harder math and the UI on representing ranges (13×13 grid, binary in/out) + a board. Hero is sampled from the deduplicated union of every hand class in the imported range library. | complete | - | 7 | [plan](.claude/PRPs/plans/completed/phase-8-hand-vs-range-flop.plan.md) · [report](.claude/PRPs/reports/phase-8-hand-vs-range-flop-report.md) |
 
 ### Phase Details
 
@@ -229,6 +230,20 @@ Reference: Elevate's estimation gameplay loop. Adapted to hold'em equity.
   - Reduced-motion path: instant transitions, no fireworks.
 - **Success signal**: Side-by-side with the Elevate reference video, the loop reads as the same primitive applied to poker. Owner would show this to a friend without apologizing.
 - **Out of phase scope**: Multiple exercise types, additional tolerance schemes, miss-vs-bullseye gradient (binary green/grey only), settings, score persistence.
+
+**Phase 8: Hand vs range, flop equity**
+- **Goal**: Third exercise type. Estimate Hero's equity vs a known Villain range on a random flop. Stretches the engine on a harder math problem (range expansion + card removal + turn+river enumeration, all delegated to `pokers::exact_equity`) and stretches the UI on representing ranges + a board.
+- **Scope**:
+  - Engine: thin wrapper `equity_vs_range_flop(hero_combo, villain_range, flop)` over `pokers::exact_equity` with a non-zero board mask. No combo expansion or card removal in our code — the library handles it.
+  - Range data: vendor the user's `rangeData.ts` + `rangeTypes.ts` from `Tevyn/poker-math` verbatim into `web/src/data/`. Normalize to a flat `Range[]` at module init; binary inclusion (collapse all action arrays via `union`).
+  - Hero hand pool: deduplicated union of every hand class across the entire library, computed once at module init. Hero combos are sampled from a class within the pool, then a specific combo is sampled from the class so blockers vary across problems with the same class.
+  - Random flop: dealt from the 50 cards remaining after Hero's two cards.
+  - UI: new `HandVsRangeStage` containing a read-only 13×13 range grid (binary fill, no weights), the board (3 cards with the same chrome as equity hands), and Hero (2 cards). Range name displayed above the grid (e.g., "BTN open"). Reuses every shared primitive without modification.
+  - Tolerance: ±10 pp (same as equity).
+  - URL: `?type=hand-vs-range&hero=AsKs&range=btn_open&board=Kh7d2c`.
+  - Exact enumeration only — no Monte Carlo fallback in this phase. Engine perf measured on Pixel and reported.
+- **Success signal**: Random hand-vs-range problem renders end-to-end on Pixel within the same interaction budget as the equity exercise; engine perf numbers captured for the open question on complex-problem latency.
+- **Out of phase scope**: Turn/river problems, range editor/picker, scenario-tagged range selection, weighted/mixed-strategy ranges, surviving-combos visualization on the reveal screen, MC fallback.
 
 **Phase 7: Visual polish pass**
 - **Goal**: Tighten the shared exercise shell after first round of hands-on play. No new exercises, no new primitives — every item refines a component that already shipped.
@@ -289,4 +304,6 @@ Phases 2 and 3 are independent and can run in parallel — phase 2 is engine-sid
 *Updated: 2026-05-02 — Phase 5 marked complete; Phase 6 added (second exercise + config-driven shell)*
 *Updated: 2026-05-02 — Phase 6 marked complete; Phase 7 added (visual polish pass from first hands-on session)*
 *Updated: 2026-05-02 — Phase 7 marked complete; report at `.claude/PRPs/reports/visual-polish-pass-report.md`*
-*Status: Phases 1–7 complete*
+*Updated: 2026-05-03 — Phase 8 added (hand vs range, flop equity); plan at `.claude/PRPs/plans/phase-8-hand-vs-range-flop.plan.md`*
+*Updated: 2026-05-04 — Phase 8 marked complete; report at `.claude/PRPs/reports/phase-8-hand-vs-range-flop-report.md`*
+*Status: Phases 1–8 complete*

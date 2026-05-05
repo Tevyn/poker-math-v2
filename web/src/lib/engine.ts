@@ -1,8 +1,13 @@
-import { count_combos, equity_vs } from "engine";
+import { count_combos, equity_vs, equity_vs_range_flop } from "engine";
 
 export interface EngineApi {
   countCombos(rangeStr: string): number;
   equityVs(handA: string, handB: string): number;
+  equityVsRangeFlop(
+    heroCombo: string,
+    villainRange: string,
+    flop: string,
+  ): number;
 }
 
 let cachedPromise: Promise<EngineApi> | null = null;
@@ -18,6 +23,13 @@ export function getEngine(): Promise<EngineApi> {
     },
     equityVs(handA: string, handB: string): number {
       return equity_vs(handA, handB);
+    },
+    equityVsRangeFlop(
+      heroCombo: string,
+      villainRange: string,
+      flop: string,
+    ): number {
+      return equity_vs_range_flop(heroCombo, villainRange, flop);
     },
   });
   cachedPromise = promise;
